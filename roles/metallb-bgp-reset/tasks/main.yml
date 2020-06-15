@@ -1,0 +1,87 @@
+---
+# Copyright 2019, Cray Inc. All Rights Reserved.
+
+- name: Reset BGP on Leaf Switch
+  block:
+
+  - name: Reset the BGP state
+    dellos10_command:
+      commands:
+        - clear ip bgp *
+    vars:
+      ansible_command_timeout: 60
+
+  - name: Check the BGP status
+    dellos10_command:
+      commands:
+        - show ip bgp summary
+    vars:
+      ansible_command_timeout: 60
+    register: result
+    changed_when: false
+
+  - debug:
+      msg: "{{ result.stdout[0] }}"
+
+  when: 'ansible_network_os == "dellos10"'
+
+- name: Reset BGP on Spine Switch
+  block:
+
+  - name: Check if BGP is enabled
+    onyx_command:
+      commands:
+        - show protocols | include bgp
+    vars:
+      ansible_command_timeout: 60
+    register: bgp_enabled
+    ignore_errors: true
+    changed_when: false
+
+  - name: Check if BGP is configured
+    onyx_command:
+      commands:
+        - enable
+        - show ip bgp summary
+        - disable
+    vars:
+      ansible_command_timeout: 60
+    register: bgp_check
+    changed_when: false
+    when:
+      - bgp_enabled.stdout is defined
+      - "'enabled' in bgp_enabled.stdout[0]"
+
+  - name: Reset BGP state and check status
+    block:
+
+    - name: Reset the BGP state
+      onyx_command:
+        commands:
+          - enable
+          - clear ip bgp all
+          - disable
+      vars:
+        ansible_command_timeout: 60
+
+    - name: Check the BGP status
+      onyx_command:
+        commands:
+          - enable
+          - show ip bgp summary
+          - disable
+      vars:
+        ansible_command_timeout: 60
+      register: result
+      changed_when: false
+
+    - debug:
+        msg: "{{ result.stdout[1] }}"
+
+    when:
+      - bgp_enabled.stdout is defined
+      - "'enabled' in bgp_enabled.stdout[0]"
+      - bgp_check.stdout is defined
+      - "'router identifier' in bgp_check.stdout[1]"
+
+  when: 'ansible_network_os == "onyx"'

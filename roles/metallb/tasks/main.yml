@@ -1,0 +1,71 @@
+---
+# Copyright 2019, Cray Inc. All Rights Reserved.
+# Tasks related to applying yaml files using kubectl will only run on the first
+# node since Kubernetes will make the appropriate changes to other nodes in the cluster
+
+- name: check if customer vars file exists
+  local_action: stat path="/opt/cray/crayctl/ansible_framework/customer_runbooks/customer_var.yml"
+  register: customer_var
+  run_once: true
+
+- name: include customer vars
+  include_vars:
+    file: "/opt/cray/crayctl/ansible_framework/customer_runbooks/customer_var.yml"
+  when: customer_var.stat.exists == true
+  run_once: true
+
+- name: Copy MetalLB template into /root/k8s for deployment
+  template:
+    src: metallb.yaml.j2
+    dest: /root/k8s/metallb.yaml
+    owner: root
+    mode: 0644
+  delegate_to: "{{ kube_deploy_host }}"
+  run_once: true
+
+- name: Deploy MetalLB DaemonSet
+  command: kubectl apply -f /root/k8s/metallb.yaml
+  register: metallb_result
+  delegate_to: "{{ kube_deploy_host }}"
+  changed_when: metallb_result.rc == 0 and "unchanged" not in metallb_result.stdout
+  run_once: true
+
+- name: Wait for MetalLB controller to be ready
+  shell: "kubectl get pods -n metallb-system -l app=metallb,component=controller"
+  delegate_to: "{{ kube_deploy_host }}"
+  run_once: true
+  register: metallb_controller 
+  until: metallb_controller.stdout.find('Running') != -1
+  retries: 20
+  delay: 10
+  changed_when: false
+
+- name: Wait for MetalLB speaker to be ready
+  shell: "kubectl get pods -n metallb-system -l app=metallb,component=speaker"
+  delegate_to: "{{ kube_deploy_host }}"
+  run_once: true
+  register: metallb_speaker
+  until: metallb_speaker.stdout.find('Running') != -1
+  retries: 20
+  delay: 10
+  changed_when: false
+
+- name: Copy metallb-config template into /root/k8s  for deployment
+  template:
+    src: metallb-config.yaml.j2
+    dest: /root/k8s/metallb-config.yaml
+    owner: root
+    mode: 0644
+  delegate_to: "{{ kube_deploy_host }}"
+  run_once: true
+
+- name: Deploy metallb-config 
+  command: kubectl apply -f /root/k8s/metallb-config.yaml
+  register: metallb_result
+  delegate_to: "{{ kube_deploy_host }}"
+  run_once: true
+  changed_when: metallb_result.rc == 0 and "unchanged" not in metallb_result.stdout
+
+- name: Record that MetalLB ran  # Workaround https://github.com/ansible/ansible/issues/31751
+  set_fact:
+    metallb_ran: True

@@ -1,0 +1,18 @@
+# Copyright 2020 Cray Inc. All Rights Reserved.
+#
+---
+- hosts: spines_mtl
+  gather_facts: false
+
+  tasks:
+
+    - name: Check the BGP routes on spine switches
+      onyx_command:
+        commands:
+          - show ip route bgp
+      vars:
+        ansible_command_timeout: 60
+      register: result
+
+    - debug:
+        msg: "{{ result.stdout[0] }}"

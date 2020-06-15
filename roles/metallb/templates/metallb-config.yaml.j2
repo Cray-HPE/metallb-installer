@@ -1,0 +1,55 @@
+{# Copyright 2019, Cray Inc. All Rights Reserved. #}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+{% if metallb_bgp_peers is defined %}
+    peers:
+{% for peer in  metallb_bgp_peers %}
+    - peer-address: {{ peer.address }}
+      peer-asn: {{ peer.peer_asn }}
+      my-asn: {{ peer.my_asn }}
+{% endfor %}
+{% endif %}
+    address-pools:
+{% if networks.node_management.meta.metallb_protocol is defined %}
+    - name: node-management
+      protocol: {{ networks.node_management.meta.metallb_protocol }}
+      addresses:
+{% for subnet in networks.node_management.blocks.ipv4 | map(attribute='subnets') | list | flatten | selectattr('label','equalto','metallb') %}
+      - {{ subnet.network }}
+{% endfor %}
+{% endif %}
+{% if networks.hardware_management.meta.metallb_protocol is defined %}
+    - name: hardware-management
+      protocol: {{ networks.hardware_management.meta.metallb_protocol }}
+      addresses:
+{% for subnet in networks.hardware_management.blocks.ipv4 | map(attribute='subnets') | list | flatten | selectattr('label','equalto','metallb') %}
+      - {{ subnet.network }}
+{% endfor %}
+{% endif %}
+{% if networks.high_speed.meta.metallb_protocol is defined %}
+    - name: high-speed
+      protocol: {{ networks.high_speed.meta.metallb_protocol }}
+      addresses:
+{% for subnet in networks.high_speed.blocks.ipv4 | map(attribute='subnets') | list | flatten | selectattr('label','equalto','metallb') %}
+      - {{ subnet.network }}
+{% endfor %}
+{% endif %}
+{% if customer_access_metallb_protocol is defined and customer_access_metallb_address_pool is defined %}
+    - name: customer-access
+      protocol: {{ customer_access_metallb_protocol }}
+      addresses:
+      - {{ customer_access_metallb_address_pool }}
+{% endif %}
+{% if customer_access_static_metallb_protocol is defined and customer_access_static_metallb_address_pool is defined %}
+    - name: customer-access-static
+      protocol: {{ customer_access_static_metallb_protocol }}
+      addresses:
+      - {{ customer_access_static_metallb_address_pool }}
+{% endif %}

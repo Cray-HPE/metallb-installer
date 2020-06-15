@@ -1,0 +1,7 @@
+---
+# Copyright 2019, Cray Inc. All Rights Reserved.
+
+# Docker image versioning tags
+metallb_image_tag: "v0.8.1"
+metallb_speaker_image: "dtr.dev.cray.com/metallb/speaker:{{ metallb_image_tag }}"
+metallb_controller_image: "dtr.dev.cray.com/metallb/controller:{{ metallb_image_tag }}"
