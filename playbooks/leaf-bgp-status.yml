@@ -1,0 +1,21 @@
+# Copyright 2020 Cray Inc. All Rights Reserved.
+#
+---
+- hosts: leafs_mtl
+  gather_facts: false
+
+  tasks:
+
+    - name: Check the BGP status on leaf switch
+      dellos10_command:
+        commands:
+          - show ip bgp summary
+      vars:
+        ansible_command_timeout: 60
+      register: result
+      when: 'ansible_network_os == "dellos10"'
+
+    - debug:
+        msg: "{{ result.stdout[0] }}"
+      when: 'ansible_network_os == "dellos10"'
+

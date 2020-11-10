@@ -1,0 +1,12 @@
+#!/usr/bin/env ansible-playbook
+
+# Copyright 2020, Cray Inc. All Rights Reserved.
+
+---
+
+- hosts:
+    - leafs_mtl
+    - spines_mtl
+  gather_facts: no
+  roles:
+    - metallb-bgp-reset
