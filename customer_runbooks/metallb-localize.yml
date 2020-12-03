@@ -1,0 +1,9 @@
+# metallb-localize.yml - Ansible playbook to configure customer-access networks for MetalLB
+# Copyright 2019 Cray Inc. All Rights Reserved.
+#
+---
+- hosts: bis[0] 
+  gather_facts: no
+  roles:
+    - docker
+    - metallb
