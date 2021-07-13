@@ -21,9 +21,9 @@
 # (MIT License)
 
 # RPM
-SPEC_NAME ?= metallb-installer
-RPM_NAME ?= metallb-installer-crayctldeploy
-RPM_VERSION ?= $(shell cat .rpm_version)
+SPEC_NAME ?= metallb-installer-crayctldeploy
+RPM_NAME ?= metallb-installer
+RPM_VERSION ?= local
 SPEC_FILE ?= ${SPEC_NAME}.spec
 SPEC_VERSION ?= $(shell cat .rpm_version)
 BUILD_METADATA ?= "1~development~$(shell git rev-parse --short HEAD)"
