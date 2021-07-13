@@ -30,12 +30,6 @@ pipeline {
             }
         }
 
-        stage("Chart") {
-            steps {
-                sh "make chart"
-            }
-        }
-
         stage('Publish ') {
             steps {
                 script {
