@@ -11,7 +11,7 @@ pipeline {
     }
 
     environment {
-        NAME = "metall-b-installer"
+        NAME = "metallb-installer"
         DESCRIPTION = "Metall B Installer"
         IS_STABLE = getBuildIsStable()
         BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)

@@ -22,7 +22,7 @@
 
 # RPM
 SPEC_NAME ?= metallb-installer-crayctldeploy
-RPM_NAME ?= metallb-installer
+RPM_NAME ?= metallb-installer-crayctldeploy
 RPM_VERSION ?= $(shell cat .rpm_version)
 SPEC_FILE ?= ${SPEC_NAME}.spec
 SPEC_VERSION ?= $(shell cat .rpm_version)
