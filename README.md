@@ -1,5 +1,7 @@
 # MetalLB 
 
+This was used only thru shasta-1.3.  It was deprecated with shasta-1.4 (pre csm-1.0).
+
 This sets up MetalLB in the cluster to support LoadBalancer services. 
 
 https://metallb.universe.tf/
